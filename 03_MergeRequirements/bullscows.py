@@ -5,7 +5,7 @@
 
 
 from typing import List
-from textdistance import Hamming
+from textdistance import hamming
 from textdistance import bag
 from numpy.random import randint
 
@@ -15,7 +15,7 @@ from numpy.random import randint
 
 def bullscows(guess: str, secret: str) -> (int, int):
     l = len(guess)
-    bulls = l - Hamming(qval=2).distance(guess, secret[0:l])
+    bulls = l - hamming(guess, secret[0:l])
     cows = max(0, l - bag(guess, secret[0:l]) - bulls)
     return (bulls, cows)
 
