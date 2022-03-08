@@ -37,9 +37,9 @@ class pyname_shell(cmd.Cmd):
     prompt = "(pyname) "
     main_classes = dict(getmembers(pynames.generators))['__all__']
     language = 'native'
-    print(main_classes)
 
     def do_generate(self, arg):
+        """Generates name with selected language and gender"""
         params = split(arg)
         gender = 'm'
         for args in params:
@@ -71,16 +71,20 @@ class pyname_shell(cmd.Cmd):
                         pyname_generator = subclasses[1][0]()
                 else:
                     default_class_name = list(subclasses_names.keys())[0]
-                    print("Running default: " + default_class_name)
                     pyname_generator = subclasses[1][0]()
-            print(pyname_generator.get_name_simple(gender, self.language))
+            local_language = self.language
+            if local_language not in pyname_generator.languages:
+                local_language = 'native'
+            print(pyname_generator.get_name_simple(gender, local_language))
+            
 
     def complete_generate(self, prefix, line, begidx, endidx) -> Union[List[str], None]:
-        test_list = self.main_classes.copy() + ['Male', 'Female']
-        suggest = [suggestions for suggestions in test_list if suggestions.startswith(prefix)]
+        sug_list = self.main_classes.copy() + ['Male', 'Female']
+        suggest = [suggestions for suggestions in sug_list if suggestions.startswith(prefix)]
         return suggest
 
     def do_language(self, arg):
+        """Use to change language"""
         params = split(arg)
         if len(params) == 0:
             print("Not enough parametrs")
@@ -91,7 +95,13 @@ class pyname_shell(cmd.Cmd):
             print("Unknown language")
             print("Choose from: " + str(LANGUAGE.ALL))
 
+    def complete_language(self, prefix, line, begidx, endidx) -> Union[List[str], None]:
+        sug_list = LANGUAGE.ALL
+        suggest = [suggestions for suggestions in sug_list if suggestions.startswith(prefix)]
+        return suggest
+
     def do_info(self, arg):
+        """Shows information about generators"""
         params = split(arg)
         is_language: bool = True if 'language' in params else False
         gender = GENDER.ALL
@@ -126,24 +136,19 @@ class pyname_shell(cmd.Cmd):
                     default_class_name = list(subclasses_names.keys())[0]
                     pyname_generator = subclasses[1][0]()
             if is_language:
-                languages = set()
-                name = pyname_generator.get_name().translations
-                if 'm' in name.keys():
-                    for language in name['m'].keys():
-                        languages.add(language)
-                if 'f' in name.keys():
-                    for language in name['f'].keys():
-                        languages.add(language)
-                for lang in languages:
+                for lang in pyname_generator.languages:
                     print(lang)
             else:
                 print(pyname_generator.get_names_number(gender))
+
+    def complete_info(self, prefix, line, begidx, endidx) -> Union[List[str], None]:
+        sug_list = self.main_classes.copy() + ['Male', 'Female'] + ['language']
+        suggest = [suggestions for suggestions in sug_list if suggestions.startswith(prefix)]
+        return suggest
 
                         
 
 
 
 if __name__ == '__main__':
-    print([1, 2, 3] + ["ab", 3])
-    print(LANGUAGE.ALL)
     pyname_shell().cmdloop()
