@@ -12,7 +12,7 @@ def get_subclasses(class_name: str) -> Tuple[List[str], List[Callable]]:
     classes_examples = []
     my_eval_str = 'pynames.generators.' + class_name.lower()
     for i in getmembers(eval(my_eval_str)):
-        if i[0].find("Generator") > 0 and 'get_name_simple' in dir(i[1]) and i[0] != 'FromListGenerator':
+        if i[0].find("Generator") > 0 and 'get_name_simple' in dir(i[1]) and i[0] != 'FromListGenerator' and i[0] != 'FromTablesGenerator':
             subclasses.append(i[0])
             classes_examples.append(i[1])
     return (subclasses, classes_examples)
@@ -82,6 +82,54 @@ class pyname_shell(cmd.Cmd):
         else:
             print("Unknown language")
             print("Choose from: " + str(LANGUAGE.ALL))
+    def do_info(self, arg):
+        params = split(arg)
+        is_language: bool = True if 'language' in params else False
+        gender = GENDER.ALL
+        for args in params:
+            if args[0].lower() in GENDER.ALL:
+                if args[0] == 'm':
+                    gender = GENDER.MALE
+                elif args[0] == 'f':
+                    gender = GENDER.FEMALE
+        params_len = len(params)
+        if params_len == 0 or params[0].lower() not in self.main_classes:
+            if params_len == 0:
+                print("Not enough parametrs")
+            else:
+                print("No such class")
+        else:
+            subclasses: Tuple[List[str], List[Callable]] = get_subclasses(params[0])
+            if len(subclasses) == 0:
+                print("Didn't find any possible classes")
+            else:
+                subclasses_names: Dict[str, str] = convert_names_to_subclasses(subclasses[0])
+                if params_len > 1:
+                    if params[1] in subclasses_names.keys():
+                        user_subclass_name = params[1]
+                        program_subclass_name = subclasses_names[user_subclass_name]
+                        pyname_generator = subclasses[1][subclasses[0].index(program_subclass_name)]()
+                    else:
+                        default_class_name = list(subclasses_names.keys())[0]
+                        program_subclass_name = subclasses_names[default_class_name]
+                        pyname_generator = subclasses[1][0]()
+                else:
+                    default_class_name = list(subclasses_names.keys())[0]
+                    pyname_generator = subclasses[1][0]()
+            if is_language:
+                languages = set()
+                name = pyname_generator.get_name().translations
+                if 'm' in name.keys():
+                    for language in name['m'].keys():
+                        languages.add(language)
+                if 'f' in name.keys():
+                    for language in name['f'].keys():
+                        languages.add(language)
+                for lang in languages:
+                    print(lang)
+            else:
+                print(pyname_generator.get_names_number(gender))
+
                         
 
 
