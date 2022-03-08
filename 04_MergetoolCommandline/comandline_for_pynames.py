@@ -34,6 +34,7 @@ class pyname_shell(cmd.Cmd):
     intro = "Welcome to pyname shell!"
     prompt = "(pyname) "
     main_classes = dict(getmembers(pynames.generators))['__all__']
+    language = 'native'
     print(main_classes)
 
     def do_generate(self, arg):
@@ -70,8 +71,17 @@ class pyname_shell(cmd.Cmd):
                     default_class_name = list(subclasses_names.keys())[0]
                     print("Running default: " + default_class_name)
                     pyname_generator = subclasses[1][0]()
-            print(pyname_generator.get_name_simple(gender))
-                        
+            print(pyname_generator.get_name_simple(gender, self.language))
+    def do_language(self, arg):
+        params = split(arg)
+        if len(params) == 0:
+            print("Not enough parametrs")
+        if params[0].lower() in LANGUAGE.ALL:
+            self.language = params[0].lower()
+            print("Language is changed to " + self.language)
+        else:
+            print("Unknown language")
+            print("Choose from: " + str(LANGUAGE.ALL))
                         
 
 
