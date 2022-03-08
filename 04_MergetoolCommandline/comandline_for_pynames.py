@@ -5,7 +5,7 @@ import readline
 import pynames
 from inspect import getmembers
 from typing import Callable, List, Dict, Tuple
-
+from pynames import GENDER, LANGUAGE
 
 def get_subclasses(class_name: str) -> Tuple[List[str], List[Callable]]:
     subclasses: List[str] = []
@@ -38,8 +38,15 @@ class pyname_shell(cmd.Cmd):
 
     def do_generate(self, arg):
         params = split(arg)
+        gender = 'm'
+        for args in params:
+            if args[0].lower() in GENDER.ALL:
+                if args[0] == 'm':
+                    gender = GENDER.MALE
+                elif args[0] == 'f':
+                    gender = GENDER.FEMALE
         params_len = len(params)
-        if params_len == 0 or params[0] not in self.main_classes:
+        if params_len == 0 or params[0].lower() not in self.main_classes:
             if params_len == 0:
                 print("Not enough parametrs")
             else:
@@ -57,14 +64,13 @@ class pyname_shell(cmd.Cmd):
                         pyname_generator = subclasses[1][subclasses[0].index(program_subclass_name)]()
                     else:
                         default_class_name = list(subclasses_names.keys())[0]
-                        print("Didn't find subclass. Running with " + default_class_name)
                         program_subclass_name = subclasses_names[default_class_name]
                         pyname_generator = subclasses[1][0]()
                 else:
                     default_class_name = list(subclasses_names.keys())[0]
                     print("Running default: " + default_class_name)
                     pyname_generator = subclasses[1][0]()
-            print(pyname_generator.get_name_simple())
+            print(pyname_generator.get_name_simple(gender))
                         
                         
 
