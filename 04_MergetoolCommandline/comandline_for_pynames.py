@@ -1,11 +1,13 @@
+from distutils.command.config import LANG_EXT
 from re import sub
 from shlex import split
 import cmd, sys
 import readline
 import pynames
 from inspect import getmembers
-from typing import Callable, List, Dict, Tuple
+from typing import Callable, List, Dict, Sequence, Tuple, Optional, Union
 from pynames import GENDER, LANGUAGE
+from itertools import chain
 
 def get_subclasses(class_name: str) -> Tuple[List[str], List[Callable]]:
     subclasses: List[str] = []
@@ -42,9 +44,9 @@ class pyname_shell(cmd.Cmd):
         gender = 'm'
         for args in params:
             if args[0].lower() in GENDER.ALL:
-                if args[0] == 'm':
+                if args[0].lower() == 'm':
                     gender = GENDER.MALE
-                elif args[0] == 'f':
+                elif args[0].lower() == 'f':
                     gender = GENDER.FEMALE
         params_len = len(params)
         if params_len == 0 or params[0].lower() not in self.main_classes:
@@ -72,6 +74,12 @@ class pyname_shell(cmd.Cmd):
                     print("Running default: " + default_class_name)
                     pyname_generator = subclasses[1][0]()
             print(pyname_generator.get_name_simple(gender, self.language))
+
+    def complete_generate(self, prefix, line, begidx, endidx) -> Union[List[str], None]:
+        test_list = self.main_classes.copy() + ['Male', 'Female']
+        suggest = [suggestions for suggestions in test_list if suggestions.startswith(prefix)]
+        return suggest
+
     def do_language(self, arg):
         params = split(arg)
         if len(params) == 0:
@@ -82,6 +90,7 @@ class pyname_shell(cmd.Cmd):
         else:
             print("Unknown language")
             print("Choose from: " + str(LANGUAGE.ALL))
+
     def do_info(self, arg):
         params = split(arg)
         is_language: bool = True if 'language' in params else False
@@ -135,4 +144,6 @@ class pyname_shell(cmd.Cmd):
 
 
 if __name__ == '__main__':
+    print([1, 2, 3] + ["ab", 3])
+    print(LANGUAGE.ALL)
     pyname_shell().cmdloop()
